@@ -22,6 +22,9 @@ class MysqlExecute:
     def get_desc(self, table_name):
         return self.db_execute('desc ' + str(table_name))
 
+    def get_index(self, table_name):
+        return self.db_execute('show index from ' + str(table_name))
+
 
 if __name__ == '__main__':
     qq = MysqlExecute(host='172.20.4.235', user='root', password='test', db='addatasys')

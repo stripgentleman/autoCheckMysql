@@ -5,6 +5,13 @@ import myExcel
 import time
 
 
+def _make_mysql_info(_table_desc, _table_index):
+    table_info = _table_desc
+    for _key in _table_index:
+        if _key['Non_unique'] == 0 or _key['Non_unique'] == '0':
+            table_info[]
+
+
 def check(_table_info, _desc):
     if _desc is None:
         return False
