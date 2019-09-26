@@ -7,9 +7,16 @@ import time
 
 def _make_mysql_info(_table_desc, _table_index):
     table_info = _table_desc
+    index_info = dict()
     for _key in _table_index:
+        if _key['Column_name'] not in index_info.keys():
+            index_info[_key['Column_name']] = dict()
         if _key['Non_unique'] == 0 or _key['Non_unique'] == '0':
-            table_info[]
+            index_info[_key['Column_name']]['is_only'] = 'y'
+        else:
+
+        if _key['Null'] == 'YES':
+
 
 
 def check(_table_info, _desc):
