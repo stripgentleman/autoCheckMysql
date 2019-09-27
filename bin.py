@@ -7,6 +7,7 @@ import time
 
 def _update_index_info(_table_index):
     index_info = dict()
+    # print(_table_index)
     for _key in _table_index:
         if _key['Column_name'] not in index_info.keys():
             index_info[_key['Column_name']] = dict()
@@ -65,11 +66,11 @@ def check(_table_info, _desc, _table_index):
 
 def check_only(_param, _table_info, _index_info):
     if _param['Field'] in _index_info.keys():
-        if _index_info[_param['Field']]['is_only'] == 'y':
+        if _index_info[_param['Field']]['is_only'] == _table_info['params'][_param['Field']]['is_only']:
             return True
         else:
             return False
-    if _param['Key'] == 'PRI' or _param['Key'] == 'UNI':
+    elif _param['Key'] == 'PRI' or _param['Key'] == 'UNI':
         if _table_info['params'][_param['Field']]['is_only'] == 'y':
             return True
         else:
@@ -116,10 +117,11 @@ def check_run(_database, _docx):
         table_name = table_info['table_name']
         try:
             desc = _database.get_desc(table_name=table_name)
+            _table_index = mysql.get_index(table_name=table_name)
         except pymysql.err.ProgrammingError as err:
             print(err)
             continue
-        check_err = check(_table_info=table_info, _desc=desc)
+        check_err = check(_table_info=table_info, _desc=desc, _table_index=_table_index)
         excel.write(check_err, table_name)
         excel.save()
 
