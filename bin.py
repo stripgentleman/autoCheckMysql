@@ -5,7 +5,7 @@ import myExcel
 import time
 
 
-def _update_index_info( _table_index):
+def _update_index_info(_table_index):
     index_info = dict()
     for _key in _table_index:
         if _key['Column_name'] not in index_info.keys():
@@ -19,17 +19,19 @@ def _update_index_info( _table_index):
             index_info[_key['Column_name']]['is_null'] = 'y'
         else:
             index_info[_key['Column_name']]['is_null'] = 'n'
+    return index_info
 
 
-def check(_table_info, _desc):
+def check(_table_info, _desc, _table_index):
     if _desc is None:
         return False
     _check_res = list()
     _check_flag = False
+    index_info = _update_index_info(_table_index)
     for param in _desc:
         if param['Field'] in _table_info['params'].keys():
             type_flag = _table_info['params'][param['Field']]['type'] == param['Type']
-            key_flag = check_key(_param=param, _table_info=_table_info)
+            key_flag = check_only(_param=param, _table_info=_table_info, _index_info=index_info)
             null_flag = check_null(_param=param, _table_info=_table_info)
             index_flag = check_index(_param=param, _table_info=_table_info)
             _check_flag = type_flag and key_flag and null_flag and index_flag
@@ -61,7 +63,12 @@ def check(_table_info, _desc):
     return _check_res
 
 
-def check_key(_param, _table_info):
+def check_only(_param, _table_info, _index_info):
+    if _param['Field'] in _index_info.keys():
+        if _index_info[_param['Field']]['is_only'] == 'y':
+            return True
+        else:
+            return False
     if _param['Key'] == 'PRI' or _param['Key'] == 'UNI':
         if _table_info['params'][_param['Field']]['is_only'] == 'y':
             return True
@@ -85,7 +92,7 @@ def check_null(_param, _table_info):
 
 
 def check_index(_param, _table_info):
-    if _param['Key'] == 'PRI' or _param['Key'] == 'UNI' or _param['Key'] == 'MUL':
+    if _param['Key'] == 'PRI' or _param['Key'] == 'UNI' or _param['Key'] == 'MUL'or _param['Key'] == 'MIX':
         if _table_info['params'][_param['Field']]['is_index'] == 'y' \
                 or _table_info['params'][_param['Field']]['is_index'] == u'主键' \
                 or _table_info['params'][_param['Field']]['is_index'] == _param['Key']:
@@ -104,7 +111,6 @@ def check_index(_param, _table_info):
 def check_run(_database, _docx):
     filename = round(time.time())
     excel = myExcel.MyExcel('./' + str(filename) + '.xlsx')
-    desc = None
     table_info_list = _docx.get_info_list()
     for table_info in table_info_list:
         table_name = table_info['table_name']
