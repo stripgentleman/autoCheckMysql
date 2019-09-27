@@ -5,18 +5,20 @@ import myExcel
 import time
 
 
-def _make_mysql_info(_table_desc, _table_index):
-    table_info = _table_desc
+def _update_index_info( _table_index):
     index_info = dict()
     for _key in _table_index:
         if _key['Column_name'] not in index_info.keys():
             index_info[_key['Column_name']] = dict()
+        index_info[_key['Column_name']]['is_index'] = 'y'
         if _key['Non_unique'] == 0 or _key['Non_unique'] == '0':
             index_info[_key['Column_name']]['is_only'] = 'y'
         else:
-
+            index_info[_key['Column_name']]['is_only'] = 'n'
         if _key['Null'] == 'YES':
-
+            index_info[_key['Column_name']]['is_null'] = 'y'
+        else:
+            index_info[_key['Column_name']]['is_null'] = 'n'
 
 
 def check(_table_info, _desc):
@@ -84,7 +86,9 @@ def check_null(_param, _table_info):
 
 def check_index(_param, _table_info):
     if _param['Key'] == 'PRI' or _param['Key'] == 'UNI' or _param['Key'] == 'MUL':
-        if _table_info['params'][_param['Field']]['is_index'] == 'y' or _table_info['params'][_param['Field']]['is_index'] == u'主键':
+        if _table_info['params'][_param['Field']]['is_index'] == 'y' \
+                or _table_info['params'][_param['Field']]['is_index'] == u'主键' \
+                or _table_info['params'][_param['Field']]['is_index'] == _param['Key']:
             return True
         else:
             return False
