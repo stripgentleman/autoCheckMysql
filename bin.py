@@ -34,7 +34,7 @@ def check(_table_info, _desc, _table_index):
             type_flag = _table_info['params'][param['Field']]['type'] == param['Type']
             key_flag = check_only(_param=param, _table_info=_table_info, _index_info=index_info)
             null_flag = check_null(_param=param, _table_info=_table_info)
-            index_flag = check_index(_param=param, _table_info=_table_info)
+            index_flag = check_index(_param=param, _table_info=_table_info, _index_info=index_info)
             _check_flag = type_flag and key_flag and null_flag and index_flag
             param['checked'] = 'yes'
             _table_info['params'][param['Field']]['checked'] = 'yes'
@@ -92,8 +92,15 @@ def check_null(_param, _table_info):
         return False
 
 
-def check_index(_param, _table_info):
+def check_index(_param, _table_info, _index_info):
     if _param['Key'] == 'PRI' or _param['Key'] == 'UNI' or _param['Key'] == 'MUL'or _param['Key'] == 'MIX':
+        if _table_info['params'][_param['Field']]['is_index'] == 'y' \
+                or _table_info['params'][_param['Field']]['is_index'] == u'主键' \
+                or _table_info['params'][_param['Field']]['is_index'] == _param['Key']:
+            return True
+        else:
+            return False
+    elif _param['Field'] in _index_info.keys() and _index_info[_param['Field']]['is_index'] == 'y':
         if _table_info['params'][_param['Field']]['is_index'] == 'y' \
                 or _table_info['params'][_param['Field']]['is_index'] == u'主键' \
                 or _table_info['params'][_param['Field']]['is_index'] == _param['Key']:
@@ -117,8 +124,9 @@ def check_run(_database, _docx):
         table_name = table_info['table_name']
         try:
             desc = _database.get_desc(table_name=table_name)
+
             _table_index = mysql.get_index(table_name=table_name)
-        except pymysql.err.ProgrammingError as err:
+        except pymysql.err.Error as err:
             print(err)
             continue
         check_err = check(_table_info=table_info, _desc=desc, _table_index=_table_index)
@@ -128,7 +136,7 @@ def check_run(_database, _docx):
 
 if __name__ == '__main__':
     mysql = MysqlExecute(host='', user='root', password='test', db='')
-    data_info = MyDocx('./test.docx')
+    data_info = MyDocx('')
     check_run(_database=mysql, _docx=data_info)
 
 

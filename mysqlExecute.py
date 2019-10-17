@@ -29,5 +29,5 @@ class MysqlExecute:
 if __name__ == '__main__':
     qq = MysqlExecute(host='172.20.4.235', user='root', password='test', db='addatasys')
     qq.set_cursor_dict()
-    print(qq.get_index('strategy_draft'))
+    print(qq.get_index('schedule_daily_schedule'))
 
