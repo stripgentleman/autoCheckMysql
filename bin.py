@@ -1,142 +1,154 @@
-from mysqlExecute import MysqlExecute
-from myDocx import MyDocx
+# from mysqlExecute import MysqlExecute
+# from myDocx import MyDocx
+from compareData import MysqlInfo
+from compareData import DocxInfo
 import pymysql
 import myExcel
 import time
 
 
-def _update_index_info(_table_index):
-    index_info = dict()
-    # print(_table_index)
-    for _key in _table_index:
-        if _key['Column_name'] not in index_info.keys():
-            index_info[_key['Column_name']] = dict()
-        index_info[_key['Column_name']]['is_index'] = 'y'
-        if _key['Non_unique'] == 0 or _key['Non_unique'] == '0':
-            index_info[_key['Column_name']]['is_only'] = 'y'
-        else:
-            index_info[_key['Column_name']]['is_only'] = 'n'
-        if _key['Null'] == 'YES':
-            index_info[_key['Column_name']]['is_null'] = 'y'
-        else:
-            index_info[_key['Column_name']]['is_null'] = 'n'
-    return index_info
-
-
-def check(_table_info, _desc, _table_index):
-    if _desc is None:
+def check(_doc_table_info, _database_table_info):
+    if _database_table_info is None:
         return False
     _check_res = list()
+    err_map = dict()
+    err_map['table'] = dict()
+    err_map['params'] = dict()
     _check_flag = False
-    index_info = _update_index_info(_table_index)
-    for param in _desc:
-        if param['Field'] in _table_info['params'].keys():
-            type_flag = _table_info['params'][param['Field']]['type'] == param['Type']
-            key_flag = check_only(_param=param, _table_info=_table_info, _index_info=index_info)
-            null_flag = check_null(_param=param, _table_info=_table_info)
-            index_flag = check_index(_param=param, _table_info=_table_info, _index_info=index_info)
+    database_params_info = _database_table_info['param_info']
+    doc_params_info = _doc_table_info['params']
+    for param_name in database_params_info:
+        if param_name in doc_params_info.keys():
+            type_flag = doc_params_info[param_name]['type'] == database_params_info[param_name]['type']
+            key_flag = check_only(_database_param_info=database_params_info[param_name], _doc_param_info=doc_params_info[param_name])
+            null_flag = check_null(_database_param_info=database_params_info[param_name], _doc_param_info=doc_params_info[param_name])
+            index_flag = check_index(_database_param_info=database_params_info[param_name], _doc_param_info=doc_params_info[param_name])
+            default_flag = check_default(_database_param_info=database_params_info[param_name], _doc_param_info=doc_params_info[param_name])
+            comment_flag = check_comment(_database_param_info=database_params_info[param_name], _doc_param_info=doc_params_info[param_name])
             _check_flag = type_flag and key_flag and null_flag and index_flag
-            param['checked'] = 'yes'
-            _table_info['params'][param['Field']]['checked'] = 'yes'
+            database_params_info[param_name]['checked'] = 'yes'
+            doc_params_info[param_name]['checked'] = 'yes'
             if _check_flag is False:
-                err_map = dict()
-                err_map[param['Field']] = dict()
+                err_map['params'] = dict()
+                err_map['params'][param_name] = dict()
                 if type_flag is False:
-                    err_map[param['Field']]['type_err'] = u'数据字典：' + str(_table_info['params'][param['Field']]['type']) + u'  数据库：' + str(param['Type'])
+                    err_map['params'][param_name]['type_err'] = u'数据字典：' + str(doc_params_info[param_name]['type']) + u'  数据库：' + str(database_params_info[param_name]['type'])
                 if key_flag is False:
-                    err_map[param['Field']]['is_only_err'] = u'数据字典：' + str(_table_info['params'][param['Field']]['is_only']) + u'  数据库：' + str(param['Key'])
+                    err_map['params'][param_name]['is_only_err'] = u'数据字典：' + str(doc_params_info[param_name]['is_only_ori']) + u'  数据库：' + str(database_params_info[param_name]['is_only'])
                 if null_flag is False:
-                    err_map[param['Field']]['is_null_err'] = u'数据字典：' + str(_table_info['params'][param['Field']]['is_null']) + u'  数据库：' + str(param['Null'])
+                    err_map['params'][param_name]['is_null_err'] = u'数据字典：' + str(doc_params_info[param_name]['is_null_ori']) + u'  数据库：' + str(database_params_info[param_name]['is_null'])
                 if index_flag is False:
-                    err_map[param['Field']]['index_err'] = u'数据字典：' + str(_table_info['params'][param['Field']]['is_index']) + u'  数据库：' + str(param['Key'])
-                _check_res.append(err_map)
-        if 'checked' not in param.keys():
-            err_map = dict()
-            err_map[param['Field']] = dict()
-            err_map[param['Field']]['exist'] = u'数据字典缺失字段'
-            _check_res.append(err_map)
-    for param_name in _table_info['params'].keys():
-        if 'checked' not in _table_info['params'][param_name].keys():
-            err_map = dict()
-            err_map[param_name] = dict()
-            err_map[param_name]['exist'] = u'数据库缺失字段'
-            _check_res.append(err_map)
-    return _check_res
+                    err_map['params'][param_name]['index_err'] = u'数据字典：' + str(doc_params_info[param_name]['is_index_ori']) + u'  数据库：' + str(database_params_info[param_name]['is_index'])
+                if default_flag is False:
+                    err_map['params'][param_name]['default_err'] = u'数据字典：' + str(doc_params_info[param_name]['default']) + u'  数据库：' + str(database_params_info[param_name]['default'])
+                if comment_flag is False:
+                    err_map['params'][param_name]['comment_err'] = u'数据字典：' + str(doc_params_info[param_name]['comment']) + u'  数据库：' + str(database_params_info[param_name]['comment'])
+        if 'checked' not in database_params_info[param_name].keys():
+            err_map['params'][param_name] = dict()
+            err_map['params'][param_name]['exist'] = u'数据字典缺失字段'
+    for param_name in doc_params_info.keys():
+        if 'checked' not in doc_params_info[param_name].keys():
+            err_map['params'][param_name] = dict()
+            err_map['params'][param_name]['exist'] = u'数据库缺失字段'
+
+    database_engine_flag = database_engine_check(_database_table_info=_database_table_info, _doc_table_info=_doc_table_info)
+    union_index_flag = union_index_check(_database_table_info=_database_table_info, _doc_table_info=_doc_table_info)
+    default_charset_flag = default_charset_check(_database_table_info=_database_table_info, _doc_table_info=_doc_table_info)
+
+    if database_engine_flag is False or union_index_flag is False or default_charset_flag is False:
+        if database_engine_flag is False:
+            err_map['table']['database_engine_err'] = u'数据字典：' + str(_doc_table_info['database_engine_ori']) + u'  数据库：' + str(_database_table_info['database_engine'])
+        if union_index_flag is False:
+            err_map['table']['union_index_err'] = u'数据字典：' + str(_doc_table_info['union_index_ori']) + u'  数据库：' + str(_database_table_info['union_index_ori'])
+        if default_charset_flag is False:
+            err_map['table']['default_charset_err'] = u'数据字典：' + str(_doc_table_info['default_charset']) + u'  数据库：' + str(_database_table_info['default_charset'])
+
+    return err_map
 
 
-def check_only(_param, _table_info, _index_info):
-    if _param['Field'] in _index_info.keys():
-        if _index_info[_param['Field']]['is_only'] == _table_info['params'][_param['Field']]['is_only']:
-            return True
-        else:
-            return False
-    elif _param['Key'] == 'PRI' or _param['Key'] == 'UNI':
-        if _table_info['params'][_param['Field']]['is_only'] == 'y':
-            return True
-        else:
-            return False
-    elif _param['Key'] == '' or _param['Key'] == 'MUL':
-        if _table_info['params'][_param['Field']]['is_only'] == 'n' or _table_info['params'][_param['Field']]['is_only'] == '':
-            return True
-        else:
-            return False
+def union_index_check(_database_table_info, _doc_table_info):
+    if len(_database_table_info['union_index'].keys()) != len(_doc_table_info['union_index'].keys()):
+        return False
+    else:
+        for key_name in _database_table_info['union_index']:
+            if key_name not in _doc_table_info['union_index']:
+                return False
+            if len(_database_table_info['union_index'][key_name]) != len(_doc_table_info['union_index'][key_name]):
+                return False
+            for param in _database_table_info['union_index'][key_name]:
+                if param not in _doc_table_info['union_index'][key_name]:
+                    return False
+        return True
+
+
+def default_charset_check(_database_table_info, _doc_table_info):
+    if _database_table_info['default_charset'] == _doc_table_info['default_charset']:
+        return True
     return False
 
 
-def check_null(_param, _table_info):
-    if _table_info['params'][_param['Field']]['is_null'] == 'n' and _param['Null'] == 'NO':
+def database_engine_check(_database_table_info, _doc_table_info):
+    if _database_table_info['database_engine'] == _doc_table_info['database_engine']:
         return True
-    elif _table_info['params'][_param['Field']]['is_null'] == 'y' and _param['Null'] == 'YES':
+    return False
+
+
+def check_only(_database_param_info, _doc_param_info):
+    if _database_param_info['is_only'] == _doc_param_info['is_only']:
         return True
+    return False
+
+
+def check_null(_database_param_info, _doc_param_info):
+    if _database_param_info['is_null'] == _doc_param_info['is_null']:
+        return True
+    return False
+
+
+def check_index(_database_param_info, _doc_param_info):
+    if _database_param_info['is_index'] == _doc_param_info['is_index']:
+        return True
+    elif _database_param_info['is_index'] == 'PRI' or _database_param_info['is_index'] == 'MUL' or _database_param_info['is_index'] == 'UNI':
+        if _doc_param_info['is_index'] == 'y':
+            return True
+        else:
+            return False
     else:
         return False
 
 
-def check_index(_param, _table_info, _index_info):
-    if _param['Key'] == 'PRI' or _param['Key'] == 'UNI' or _param['Key'] == 'MUL'or _param['Key'] == 'MIX':
-        if _table_info['params'][_param['Field']]['is_index'] == 'y' \
-                or _table_info['params'][_param['Field']]['is_index'] == u'主键' \
-                or _table_info['params'][_param['Field']]['is_index'] == _param['Key']:
-            return True
-        else:
-            return False
-    elif _param['Field'] in _index_info.keys() and _index_info[_param['Field']]['is_index'] == 'y':
-        if _table_info['params'][_param['Field']]['is_index'] == 'y' \
-                or _table_info['params'][_param['Field']]['is_index'] == u'主键' \
-                or _table_info['params'][_param['Field']]['is_index'] == _param['Key']:
-            return True
-        else:
-            return False
-    else:
-        if _param['Key'] == '':
-            if _table_info['params'][_param['Field']]['is_index'] == 'n' or _table_info['params'][_param['Field']]['is_index'] == '':
-                return True
-            else:
-                return False
-        return False
+def check_default(_database_param_info, _doc_param_info):
+    if _database_param_info['default'] == _doc_param_info['default']:
+        return True
+    return False
 
 
-def check_run(_database, _docx):
+def check_comment(_database_param_info, _doc_param_info):
+    if _database_param_info['comment'] == _doc_param_info['comment']:
+        return True
+    return False
+
+
+def check_run(_database, _doc):
     filename = round(time.time())
     excel = myExcel.MyExcel('./' + str(filename) + '.xlsx')
-    table_info_list = _docx.get_info_list()
-    for table_info in table_info_list:
-        table_name = table_info['table_name']
+    table_info_list = _doc.table_info_list
+    for doc_table_info in table_info_list:
+        if doc_table_info is None:
+            continue
+        table_name = doc_table_info['table_name']
         try:
-            desc = _database.get_desc(table_name=table_name)
+            table_info = _database.get_table_info(table_name=table_name)
 
-            _table_index = mysql.get_index(table_name=table_name)
         except pymysql.err.Error as err:
             print(err)
             continue
-        check_err = check(_table_info=table_info, _desc=desc, _table_index=_table_index)
+        check_err = check(_doc_table_info=doc_table_info, _database_table_info=table_info)
         excel.write(check_err, table_name)
         excel.save()
 
 
 if __name__ == '__main__':
-    mysql = MysqlExecute(host='', user='root', password='test', db='')
-    data_info = MyDocx('')
-    check_run(_database=mysql, _docx=data_info)
-
-
+    mysql_info = MysqlInfo(host='', user='', password='', db='')
+    docx_info = DocxInfo('./.docx')
+    check_run(_database=mysql_info, _doc=docx_info)
