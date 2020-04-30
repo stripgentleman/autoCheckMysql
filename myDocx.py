@@ -47,14 +47,14 @@ class MyDocx:
 
     @staticmethod
     def check_table_sql(table):
-        check_flag = MyDocx.get_table_cell(table=table, row=-3, column=1)
+        check_flag = MyDocx.get_table_cell(table=table, row=-4, column=0)
         # print(table._column_count)
         # cell_idx = 1 + (-2 * table._column_count)
         # print(cell_idx)
         # for cell in MyDocx.get_table_cell(table=table, row=0):
         #     print(cell)
 
-        if check_flag == 'InnoDB':
+        if check_flag.startswith('数据'):
             return True
         print(check_flag)
         return False
@@ -82,8 +82,9 @@ class MyDocx:
         row = 1
         table_info = dict()
         # print(table)
-        table_name = MyDocx.get_table_cell(table=table, row=-4, column=1)
+        table_name = MyDocx.get_table_cell(table=table, row=-3, column=1)
         table_info['table_name'] = table_name
+
         table_info['params'] = dict()
         column_names = MyDocx.get_table_cell(table, row=0)
         name_num = 0
@@ -105,7 +106,7 @@ class MyDocx:
                 only_num = current_column
             if column_name.startswith(u'索引'):
                 index_num = current_column
-            if column_name.startswith(u'COMMENT'):
+            if column_name.startswith(u'COMMENT') or column_name.startswith(u'注释'):
                 comment_num = current_column
             if column_name.startswith(u'默认值'):
                 default_num = current_column
@@ -113,28 +114,41 @@ class MyDocx:
         try:
             while flag:
                 param_map = dict()
+                param_map['type'] = ''
                 name = MyDocx.get_table_cell(table=table, row=row, column=name_num)
-                param_map['type'] = MyDocx.get_table_cell(table=table, row=row, column=type_num).lower()
+
+                type_word_list = MyDocx.get_table_cell(table=table, row=row, column=type_num).replace('\n', '').replace('\r', '').lower().split(' ')
+
+                unsigned_flag = False
+                for type_word in type_word_list:
+                    if type_word == 'unsigned':
+                        unsigned_flag = True
+                        continue
+                    else:
+                        param_map['type'] += type_word
+                if unsigned_flag:
+                    param_map['type'] += ' unsigned'
+                param_map['type_ori'] = MyDocx.get_table_cell(table=table, row=row, column=type_num)
                 is_null = MyDocx.get_table_cell(table=table, row=row, column=null_num).replace(' ', '').lower()
                 if is_null == '是' or is_null == 'y' or is_null == 'yes':
                     param_map['is_null'] = 'y'
                 else:
                     param_map['is_null'] = 'n'
-                param_map['is_null_ori'] = MyDocx.get_table_cell(table=table, row=row, column=null_num).replace(' ', '')
+                param_map['is_null_ori'] = MyDocx.get_table_cell(table=table, row=row, column=null_num)
                 is_only = MyDocx.get_table_cell(table=table, row=row, column=only_num).replace(' ', '')
                 if is_only == '是' or is_only == 'y' or is_only == 'yes':
                     param_map['is_only'] = 'y'
                 else:
                     param_map['is_only'] = 'n'
-                param_map['is_only_ori'] = MyDocx.get_table_cell(table=table, row=row, column=null_num).replace(' ', '')
+                param_map['is_only_ori'] = MyDocx.get_table_cell(table=table, row=row, column=only_num)
                 is_index = MyDocx.get_table_cell(table=table, row=row, column=index_num).replace(' ', '').lower()
-                if is_index == '是' or is_index == 'y' or is_index == 'yes':
+                if is_index == '是' or is_index == 'y' or is_index == 'yes' or is_index == '主键':
                     param_map['is_index'] = 'y'
                 elif is_index == 'pri' or is_index == 'uni' or is_index == 'mul':
                     param_map['is_index'] = is_index.upper()
                 else:
                     param_map['is_index'] = 'n'
-                param_map['is_index_ori'] = MyDocx.get_table_cell(table=table, row=row, column=null_num).replace(' ', '')
+                param_map['is_index_ori'] = MyDocx.get_table_cell(table=table, row=row, column=index_num)
 
                 param_map['comment'] = MyDocx.get_table_cell(table=table, row=row, column=comment_num)
                 if param_map['comment'] is None:
@@ -146,6 +160,7 @@ class MyDocx:
                 # print(table_name)
                 # print(name_num)
                 # print(MyDocx.get_table_cell(table=table, row=row, column=name_num))
+                # print(MyDocx.get_table_cell(table=table, row=row, column=0))
                 if MyDocx.get_table_cell(table=table, row=row, column=0).startswith(u'数据'):
                     flag = False
             table_info['database_engine'] = MyDocx.get_table_cell(table=table, row=-3, column=1).lower()
@@ -159,13 +174,17 @@ class MyDocx:
                 key_pos = 0
                 for key_name in key_name_list:
                     table_info['union_index'][key_name] = list()
-                    params_str_lists = re.findall('\(([A-z_,0-9]+)\)', table_info['union_index_ori'])
-                    table_info['union_index'][key_name] = str(params_str_lists[key_pos]).split(',')
+                    params_str_lists = re.findall('\(([A-z_,0-9 ]+)\)', table_info['union_index_ori'])
+                    # print(params_str_lists)
+                    table_info['union_index'][key_name] = str(params_str_lists[key_pos]).replace(' ', '').split(',')
+                    # print(table_info['union_index'][key_name])
                     key_pos += 1
-        except:
-            print(str(table_name) + u'数据读取错误')
+        except Exception as err:
+            print(str(table_name) + u'数据读取错误:' + str(err))
             table_info = None
         # print(table_info)
+        # if table_name == 'badge':
+        #     print(table_info)
         return table_info
 
     def get_info_list(self):

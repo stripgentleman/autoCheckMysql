@@ -8,6 +8,7 @@ class MysqlExecute:
         self.db_connection = pymysql.connect(host=host, port=port, user=user, password=password, db=db, charset=charset)
         self.db_cursor = self.db_connection.cursor()
         self.set_cursor_dict()
+        self.db_name = db
 
     def set_cursor_dict(self):
         self.db_cursor = self.db_connection.cursor(cursor=pymysql.cursors.DictCursor)
@@ -34,10 +35,8 @@ class MysqlExecute:
         ret_info['union_index'] = dict()
         ret_info['union_index_ori'] = ''
         create_str = str(self.get_create_table(table_name)[0]['Create Table'])
-        # create_str = create_str.replace('\n', '')
         create_str_list = self.get_brackets_contents_for_str(create_str, 1)
         params_create_str = create_str_list[0]
-        # print(create_str_list[1])
         post_create_str = create_str_list[2]
         params_desc = params_create_str.split('\n')
         temp_index = 0
@@ -51,7 +50,6 @@ class MysqlExecute:
             temp_index += 1
 
         table_info = self.get_param_info_from_create_str(params_desc)
-        # print(table_info[0])
 
         for key_type in table_info[0]:
             if key_type == 'PRI':
@@ -85,23 +83,22 @@ class MysqlExecute:
                             continue
         ret_info['param_info'] = table_info[1]
         ret_info['table_name'] = table_name
-        # print(post_create_str)
-        # print(re.findall('ENGINE=([A-z]+) ', post_create_str))
         ret_info['database_engine'] = re.findall('ENGINE=([A-z0-9]+) ', post_create_str)[0].lower()
-        # print(table_name)
-        # print(post_create_str)
         ret_info['default_charset'] = re.findall('DEFAULT CHARSET=([A-z0-9]+) ', post_create_str)[0].lower()
         ret_info['union_index_ori'] = ret_info['union_index_ori'][:-1]
-        # print(table_name)
-        # print(re.findall('COMMENT=\'(.*)\'', post_create_str))
         ret_info['comment'] = ''
         if len(re.findall('COMMENT=\'(.*)\'', post_create_str)) > 1:
             ret_info['comment'] = re.findall('COMMENT=\'(.*)\'', post_create_str)[0]
-        # ret_info['union_index'] = ret_info['union_index'][:-1]
-        # print(ret_info['union_index'])
         return ret_info
 
         # print(params_desc[-2])
+
+    def get_table_list(self):
+        ori_table_list = self.db_execute('show tables')
+        table_list = list()
+        for table in ori_table_list:
+            table_list.append(table['Tables_in_' + self.db_name])
+        return table_list
 
     @staticmethod
     def get_param_info_from_create_str(_str_list):
@@ -112,7 +109,8 @@ class MysqlExecute:
             current_word = ''
             start_end_flag = False
             omitted_flag = False  # 省略判断flag
-            name_flag = False  # `号flag
+            name_flag = False  # 反引号flag
+            brackets_flag = False
             word_list = list()
             for current_char in current_str:
                 if current_char == '`' and pre_char != '\\' and pre_char != '(':
@@ -128,10 +126,16 @@ class MysqlExecute:
                     pre_char = current_char
                     # continue
                 if omitted_flag is False:
-                    if current_char != ' ' and current_char != '' and current_char != ',' and current_char != '`' and current_char != '\'':
-                        start_end_flag = True
-                    if current_char == ' ' or current_char == '' or current_char == ',' and pre_char == ')' or current_char == ',' and pre_char != '`':
-                        start_end_flag = False
+                    if current_char == ')':
+                        brackets_flag = False
+                    if brackets_flag is False:
+                        if current_char != ' ' and current_char != '' and current_char != ',' and current_char != '`' and current_char != '\'':
+                            start_end_flag = True
+                        if current_char == ' ' or current_char == '' or (current_char == ',' and pre_char == ')') or (current_char == ',' and pre_char != '`'):
+                        # if current_char == ' ' or current_char == '' or (current_char == ',' and pre_char == ')'):
+                            start_end_flag = False
+                    if current_char == '(':
+                        brackets_flag = True
                 if start_end_flag:
                     current_word += current_char
                 pre_char = current_char
@@ -152,6 +156,9 @@ class MysqlExecute:
                 default_flag = False
                 comment_flag = False
                 for word in word_list[2:]:
+                    if word == 'unsigned':
+                        param_info[param_name]['type'] += ' unsigned'
+                        continue
                     if word == 'NOT':
                         not_flag = True
                         continue
@@ -176,12 +183,12 @@ class MysqlExecute:
                         param_info[param_name]['is_null'] = 'n'
                         not_flag = False
                         continue
-
             if word_list[0] + word_list[1] == 'PRIMARYKEY':
                 if 'PRI' not in index_info:
                     index_info['PRI'] = dict()
                 index_info['PRI']['params_name'] = word_list[2].replace('(', '').replace(')', '').replace('`', '').split(',')
                 if 'USING' in word_list:
+                    # print(word_list)
                     index_info['PRI']['__type__'] = word_list[word_list.index('USING')+1]
             if word_list[0] == 'KEY':
                 if 'MUL' not in index_info:
