@@ -22,13 +22,16 @@ class MysqlExecute:
         return ret
 
     def get_desc(self, table_name):
-        return self.db_execute('desc ' + str(table_name))
+        # print('desc `' + str(table_name) + '`')
+        return self.db_execute('desc `' + str(table_name) + '`')
 
     def get_index(self, table_name):
-        return self.db_execute('show index from ' + str(table_name))
+        # print('show index from `' + str(table_name) + '`')
+        return self.db_execute('show index from `' + str(table_name) + '`')
 
     def get_create_table(self, table_name):
-        return self.db_execute('show create table ' + table_name)
+        # print('show create table `' + table_name + '`')
+        return self.db_execute('show create table `' + table_name + '`')
 
     def make_table_info(self, table_name):
         ret_info = dict()
@@ -226,6 +229,7 @@ class MysqlExecute:
                 index_info[index_type][key_name]['params'] = word_list[3].replace('(', '').replace(')', '').replace('`', '').split(',')
                 if 'USING' in word_list:
                     index_info[index_type][key_name]['__type__'] = word_list[word_list.index('USING') + 1]
+        # print(param_info)
         return index_info, param_info
 
     @staticmethod
@@ -278,3 +282,4 @@ if __name__ == '__main__':
     print(qq.make_table_info('schedule_daily_schedule'))
     # print(qq.get_desc('schedule_daily_schedule'))
     # print('\'')
+    # print(qq.get_table_list())

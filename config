@@ -1,12 +1,17 @@
 # 这是数据字典自动化检测脚本的配置文件
 # 主要用于配置数据字典doc文件内数据表的格式，例子如下：
-# 如，tableName=(-3,0)的意思是表名在表格的倒数第三行第一列
+# 如，tableNamePosition=(-3,0)的意思是表名在表格的倒数第三行第一列
+# 目前配置种类有*Flag,*Column,*Value,*Position
 
+[doc]
 # tableFlagPosition：判定表格为数据字典表格的依据字段所在的位置
-tableFlagPosition=(-4,0)
+tableFlagPosition=(-3,0)
 
 # tableFlagValue：判定表格为数据字典表格的依据字段的值
 tableFlagValue=数据表
+
+# tableNamePosition：数据字典里数据表名称的位置
+tableNamePosition=(-4,1)
 
 # tableDefaultCharsetFlag：数据表默认字符集检测开关，True为开启，False为关闭
 tableDefaultCharsetFlag=True
@@ -25,3 +30,17 @@ unionIndexFlag=True
 
 # unionIndexPosition：联合索引在每个数据字典表的位置
 unionIndexPosition=(-1,1)
+
+# minTableRowsValue：最小的数据字典行数
+minTableRowsValue=5
+
+# fieldInfoEndValue：字段信息结尾标志值
+fieldInfoEndValue=数据
+
+# fieldInfoEndColumn：字段信息结尾标志列数
+fieldInfoEndColumn=0
+
+[excel]
+
+[mysql]
+

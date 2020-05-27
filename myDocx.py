@@ -1,8 +1,12 @@
 import docx
 import re
 
+from configuration import Configuration
+
 
 class MyDocx:
+    config = Configuration().doc_config_dict
+
     def __init__(self, document_path):
         self.document = docx.Document(document_path)
 
@@ -47,14 +51,17 @@ class MyDocx:
 
     @staticmethod
     def check_table_sql(table):
-        check_flag = MyDocx.get_table_cell(table=table, row=-4, column=0)
+        check_flag = MyDocx.get_table_cell(table=table,
+                                           row=int(MyDocx.config['tableFlagPosition']['row']),
+                                           column=int(MyDocx.config['tableFlagPosition']['col']))
         # print(table._column_count)
         # cell_idx = 1 + (-2 * table._column_count)
         # print(cell_idx)
         # for cell in MyDocx.get_table_cell(table=table, row=0):
         #     print(cell)
 
-        if check_flag.startswith('数据'):
+        if check_flag.startswith(MyDocx.config['tableFlagValue']):
+            # print('1')
             return True
         print(check_flag)
         return False
@@ -64,7 +71,7 @@ class MyDocx:
         sql_table_list = list()
         count = 0
         for table in table_list:
-            if len(MyDocx._get_table_all_rows(table)) < 5:
+            if len(MyDocx._get_table_all_rows(table)) < int(MyDocx.config['minTableRowsValue']):
                 continue
             count += 1
             try:
@@ -82,9 +89,11 @@ class MyDocx:
         row = 1
         table_info = dict()
         # print(table)
-        table_name = MyDocx.get_table_cell(table=table, row=-3, column=1)
+        table_name = MyDocx.get_table_cell(table=table,
+                                           row=int(MyDocx.config['tableNamePosition']['row']),
+                                           column=int(MyDocx.config['tableNamePosition']['col']))
         table_info['table_name'] = table_name
-
+        
         table_info['params'] = dict()
         column_names = MyDocx.get_table_cell(table, row=0)
         name_num = 0
@@ -150,35 +159,52 @@ class MyDocx:
                     param_map['is_index'] = 'n'
                 param_map['is_index_ori'] = MyDocx.get_table_cell(table=table, row=row, column=index_num)
 
-                param_map['comment'] = MyDocx.get_table_cell(table=table, row=row, column=comment_num)
-                if param_map['comment'] is None:
-                    param_map['comment'] = ''
+                param_map['comment_ori'] = MyDocx.get_table_cell(table=table, row=row, column=comment_num)
+                if param_map['comment_ori'] is None:
+                    param_map['comment_ori'] = ''
+                else:
+                    param_map['comment'] = param_map['comment_ori'].replace(' ', '').replace('\n', '').replace('\r', '')
+
                 if default_num != 0:
-                    param_map['default'] = MyDocx.get_table_cell(table=table, row=row, column=default_num)
+                    param_map['default_ori'] = MyDocx.get_table_cell(table=table, row=row, column=default_num)
+                    param_map['default'] = param_map['default_ori']
+
                 table_info['params'][str(name)] = param_map
                 row += 1
                 # print(table_name)
                 # print(name_num)
                 # print(MyDocx.get_table_cell(table=table, row=row, column=name_num))
                 # print(MyDocx.get_table_cell(table=table, row=row, column=0))
-                if MyDocx.get_table_cell(table=table, row=row, column=0).startswith(u'数据'):
+                if MyDocx.get_table_cell(table=table, row=row,
+                                         column=int(MyDocx.config['fieldInfoEndColumn'])).startswith(MyDocx.config['fieldInfoEndValue']):
                     flag = False
-            table_info['database_engine'] = MyDocx.get_table_cell(table=table, row=-3, column=1).lower()
-            table_info['default_charset'] = MyDocx.get_table_cell(table=table, row=-2, column=1).lower()
-            table_info['database_engine_ori'] = MyDocx.get_table_cell(table=table, row=-3, column=1)
-            table_info['default_charset_ori'] = MyDocx.get_table_cell(table=table, row=-2, column=1)
-            table_info['union_index_ori'] = MyDocx.get_table_cell(table=table, row=-1, column=1)
-            table_info['union_index'] = dict()
-            if len(table_info['union_index_ori']) > 3:
-                key_name_list = re.findall('([A-z_0-9]+)\(', table_info['union_index_ori'])
-                key_pos = 0
-                for key_name in key_name_list:
-                    table_info['union_index'][key_name] = list()
-                    params_str_lists = re.findall('\(([A-z_,0-9 ]+)\)', table_info['union_index_ori'])
-                    # print(params_str_lists)
-                    table_info['union_index'][key_name] = str(params_str_lists[key_pos]).replace(' ', '').split(',')
-                    # print(table_info['union_index'][key_name])
-                    key_pos += 1
+            if MyDocx.config['tableEngineFlag']:
+                table_info['database_engine_ori'] = MyDocx.get_table_cell(table=table,
+                                                                          row=int(MyDocx.config['tableEnginePosition']['row']),
+                                                                          column=int(MyDocx.config['tableEnginePosition']['col']))
+                table_info['database_engine'] = table_info['database_engine_ori'].lower()
+
+            if MyDocx.config['tableDefaultCharsetFlag']:
+                table_info['default_charset_ori'] = MyDocx.get_table_cell(table=table,
+                                                                          row=int(MyDocx.config['tableDefaultCharsetPosition']['row']),
+                                                                          column=int(MyDocx.config['tableDefaultCharsetPosition']['col']))
+                table_info['default_charset'] = table_info['default_charset_ori'].lower()
+
+            if MyDocx.config['unionIndexFlag']:
+                table_info['union_index_ori'] = MyDocx.get_table_cell(table=table,
+                                                                      row=int(MyDocx.config['unionIndexPosition']['row']),
+                                                                      column=int(MyDocx.config['unionIndexPosition']['col']))
+                table_info['union_index'] = dict()
+                if len(table_info['union_index_ori']) > 3:
+                    key_name_list = re.findall('([A-z_0-9]+)\(', table_info['union_index_ori'])
+                    key_pos = 0
+                    for key_name in key_name_list:
+                        table_info['union_index'][key_name] = list()
+                        params_str_lists = re.findall('\(([A-z_,0-9 ]+)\)', table_info['union_index_ori'])
+                        # print(params_str_lists)
+                        table_info['union_index'][key_name] = str(params_str_lists[key_pos]).replace(' ', '').split(',')
+                        # print(table_info['union_index'][key_name])
+                        key_pos += 1
         except Exception as err:
             print(str(table_name) + u'数据读取错误:' + str(err))
             table_info = None
@@ -198,8 +224,8 @@ class MyDocx:
 
 
 if __name__ == '__main__':
-    # my = MyDocx('./广告业务后台-数据字典.docx')
-    my = MyDocx('./运维管理系统项目-数据字典V1.0.docx')
+    my = MyDocx('./广告业务后台-数据字典.docx')
+    # my = MyDocx('./运维管理系统项目-数据字典V1.0.docx')
     tl = my.get_info_list()
     for t in tl:
         print(t)

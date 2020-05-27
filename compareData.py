@@ -12,12 +12,12 @@ class DocxInfo:
 '''
 输出的docx信息格式：（依据数据字典模板1.2定）
 {'table_name': 'report',
- 'params': {'report_id': {'type': 'Int(8)','type_ori': 'Int(8)', 'is_null': 'n', 'is_only': 'y', 'is_index': 'y', 'is_null_ori': 'n', 'is_only_ori': 'y', 'is_index_ori': 'y', 'comment': '自增主键id，从10000开始自增。系统生成的报告编号。', 'default': '', checked:'no'},
-            'result': {'type': 'tinyint(1)','type_ori': 'Int(8)', 'is_null': 'n', 'is_only': 'n', 'is_index': 'n', 'is_null_ori': 'n', 'is_only_ori': 'y', 'is_index_ori': 'y', 'comment': '巡检记录是n存在异常；系统自动生成，巡检结果；0正常，1异常', 'default': '0', checked:'no'},
-            'creator': {'type': 'varchar(16)','type_ori': 'Int(8)', 'is_null': 'n', 'is_only': 'n', 'is_index': 'n', 'is_null_ori': 'n', 'is_only_ori': 'y', 'is_index_ori': 'y', 'comment': '创建人', 'default': '', checked:'no'},
-            'create_time': {'type': 'timestamp','type_ori': 'Int(8)', 'is_null': 'n', 'is_only': 'n', 'is_index': 'n', 'is_null_ori': 'n', 'is_only_ori': 'y', 'is_index_ori': 'y', 'comment': '创建时间', 'default': 'CURRENT_TIMESTAMP', checked:'no'},
-            'updater': {'type': 'varchar(16)','type_ori': 'Int(8)', 'is_null': 'n', 'is_only': 'n', 'is_index': 'n', 'is_null_ori': 'n', 'is_only_ori': 'y', 'is_index_ori': 'y', 'comment': '编辑人', 'default': '', checked:'no'},
-            'update_time': {'type': 'timestamp','type_ori': 'Int(8)', 'is_null': 'n', 'is_only': 'n', 'is_index': 'n', 'is_null_ori': 'n', 'is_only_ori': 'y', 'is_index_ori': 'y', 'comment': '编辑时间', 'default': 'CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP', checked:'no'}}
+ 'params': {'report_id': {'type': 'Int(8)','type_ori': 'Int(8)', 'is_null': 'n', 'is_only': 'y', 'is_index': 'y', 'is_null_ori': 'n', 'is_only_ori': 'y', 'is_index_ori': 'y', 'comment_ori': '自增主键id，从10000开始自增。系统生成的报告编号。', 'comment':'自增主键id，从10000开始自增。系统生成的报告编号。','default_ori': '',  'default':'',checked:'no'},
+            'result': {'type': 'tinyint(1)','type_ori': 'Int(8)', 'is_null': 'n', 'is_only': 'n', 'is_index': 'n', 'is_null_ori': 'n', 'is_only_ori': 'y', 'is_index_ori': 'y', 'comment_ori': '巡检记录是n存在异常；系统自动生成，巡检结果；0正常，1异常', 'comment':'巡检记录是n存在异常；系统自动生成，巡检结果；0正常，1异常' 'default_ori': '0',  'default':'',checked:'no'},
+            'creator': {'type': 'varchar(16)','type_ori': 'Int(8)', 'is_null': 'n', 'is_only': 'n', 'is_index': 'n', 'is_null_ori': 'n', 'is_only_ori': 'y', 'is_index_ori': 'y', 'comment_ori': '创建人', 'comment':'创建人' 'default_ori': '', 'default':'', checked:'no'},
+            'create_time': {'type': 'timestamp','type_ori': 'Int(8)', 'is_null': 'n', 'is_only': 'n', 'is_index': 'n', 'is_null_ori': 'n', 'is_only_ori': 'y', 'is_index_ori': 'y', 'comment_ori': '创建时间', 'comment':'创建时间' 'default_ori': 'CURRENT_TIMESTAMP', 'default':'',checked:'no'},
+            'updater': {'type': 'varchar(16)','type_ori': 'Int(8)', 'is_null': 'n', 'is_only': 'n', 'is_index': 'n', 'is_null_ori': 'n', 'is_only_ori': 'y', 'is_index_ori': 'y', 'comment_ori': '编辑人', 'comment':'编辑人' 'default_ori': '', 'default':'',checked:'no'},
+            'update_time': {'type': 'timestamp','type_ori': 'Int(8)', 'is_null': 'n', 'is_only': 'n', 'is_index': 'n', 'is_null_ori': 'n', 'is_only_ori': 'y', 'is_index_ori': 'y', 'comment_ori': '编辑时间', 'comment':'编辑时间' 'default_ori': 'CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP', 'default':'',checked:'no'}}
 'database_engine': 'InnoDB',
 'default_charset': 'utf8',
 'union_index_ori': 'Aaa(dsadsa,dsads),dsad_sa(dsads,dsadsa)',

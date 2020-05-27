@@ -32,8 +32,8 @@ class MyExcel:
         self._sheet.cell(row=1, column=self.union_index_column).value = '数据库联合索引'
 
     def write(self, _err_map, _table_name):
-        print(_err_map)
         current_row = self._sheet.max_row + 1
+
         for _err_param in _err_map['params']:
             self._sheet.cell(row=current_row, column=self.table_column).value = _table_name
             self._sheet.cell(row=current_row, column=self.name_column).value = _err_param
@@ -62,6 +62,12 @@ class MyExcel:
             if table_err == 'default_charset_err':
                 self._sheet.cell(row=current_row, column=self.default_charset_column).value = _err_map['table']['default_charset_err']
             current_row += 1
+        # for db_err in _err_map['db']:
+        #     current_row += 1
+        #     self._sheet.cell(row=current_row, column=1).value = '数据库缺失表'
+        #     self._sheet.cell(row=current_row, column=2).value = '数据字典缺失表'
+        #     if db_err == 'database_missing':
+        #         self._sheet.cell(row=current_row, column=1).value = db_err + ''
 
     def save(self):
         self._wxl.save(self._file_path)
