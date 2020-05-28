@@ -158,7 +158,8 @@ def check_run(_database, _doc):
             continue
         check_err = check(_doc_table_info=doc_table_info, _database_table_info=table_info)
         # print(check_err)
-        excel.write(check_err, table_name)
+        # excel.write(check_err, table_name)
+        excel.col_write(check_err, table_name)
         excel.save()
 
 
