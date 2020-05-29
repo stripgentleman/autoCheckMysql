@@ -1,4 +1,5 @@
 import openpyxl
+import openpyxl.styles
 
 
 class MyExcel:
@@ -23,7 +24,6 @@ class MyExcel:
         self._file_path = _path
         self._wxl = openpyxl.Workbook()
         self._sheet = self._wxl.create_sheet(title='err', index=0)
-
 
     def write(self, _err_map, _table_name):
         self._sheet.cell(row=1, column=self.table_column).value = '表名'
@@ -75,24 +75,41 @@ class MyExcel:
         #     if db_err == 'database_missing':
         #         self._sheet.cell(row=current_row, column=1).value = db_err + ''
 
-    def merge_same_row(self, col_num):
+    def merge_same_row(self, col_num, merge_type=1):
         start_row = 1
         past_value = ''
-        current_value = ''
         max_row = self._sheet.max_row
         if max_row < 2:
             return
-        for i in range(2,max_row+1):
-            current_value = self._sheet.cell(row=i, column=self.type_column).value
-            if current_value != past_value:
-                self._sheet.merge_cells(start_row=start_row,end_row=i-1,start_column=col_num,end_column=col_num)
-                start_row = i
+        if merge_type == 1:
+            for i in range(2, max_row+1):
+                current_value = self._sheet.cell(row=i, column=col_num).value
+                if current_value != past_value:
+                    self._sheet.merge_cells(start_row=start_row,end_row=i-1,start_column=col_num,end_column=col_num)
+                    self._sheet.cell(row=start_row, column=col_num).alignment = openpyxl.styles.Alignment(vertical='center')
+                    start_row = i
+                    past_value = current_value
+        if merge_type == 2:
+            for i in range(2, max_row+1):
+                current_value = self._sheet.cell(row=i, column=col_num).value
+                if current_value == past_value and self._sheet.cell(row=i, column=col_num - 1).value == self._sheet.cell(row=i-1, column=col_num-1).value:
+                    self._sheet.merge_cells(start_row=i-1,end_row=i,start_column=col_num,end_column=col_num)
+                    self._sheet.cell(row=i-1, column=col_num).alignment = openpyxl.styles.Alignment(vertical='center')
+                past_value = current_value
 
     def merge_null_col(self, start_col, end_col):
         pass
 
-
     def col_write(self, _err_map, _table_name):
+        self._sheet.cell(row=1, column=self.table_name_column).value = '表名'
+        self._sheet.cell(row=1, column=self.field_name_column).value = '字段名'
+        self._sheet.cell(row=1, column=self.err_column).value = '错误类型'
+        self._sheet.cell(row=1, column=self.err_info_column).value = '错误信息'
+        self._sheet.cell(row=1, column=self.table_name_column).fill = openpyxl.styles.PatternFill("solid", fgColor="00FFFF")
+        self._sheet.cell(row=1, column=self.field_name_column).fill = openpyxl.styles.PatternFill("solid", fgColor="00FFFF")
+        self._sheet.cell(row=1, column=self.err_column).fill = openpyxl.styles.PatternFill("solid", fgColor="00FFFF")
+        self._sheet.cell(row=1, column=self.err_info_column).fill = openpyxl.styles.PatternFill("solid", fgColor="00FFFF")
+
         current_row = self._sheet.max_row + 1
         for _err_param in _err_map['params']:
             self._sheet.cell(row=current_row, column=self.table_column).value = _table_name
@@ -165,7 +182,7 @@ class MyExcel:
                     'default_charset_err']
                 current_row += 1
         self.merge_same_row(self.table_name_column)
-        self.merge_same_row(self.field_name_column)
+        self.merge_same_row(self.field_name_column, 2)
 
     def save(self):
         self._wxl.save(self._file_path)
