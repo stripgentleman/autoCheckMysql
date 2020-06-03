@@ -54,6 +54,7 @@ class MysqlExecute:
 
         table_info = self.get_param_info_from_create_str(params_desc)
 
+        # print(table_info[0])
         for key_type in table_info[0]:
             if key_type == 'PRI':
                 if len(table_info[0][key_type]['params_name']) > 1:
@@ -108,6 +109,7 @@ class MysqlExecute:
         param_info = dict()
         index_info = dict()
         for current_str in _str_list:
+            current_char_len = 0
             pre_char = ''
             current_word = ''
             start_end_flag = False
@@ -116,9 +118,9 @@ class MysqlExecute:
             brackets_flag = False
             word_list = list()
             for current_char in current_str:
+                current_char_len += 1
                 if current_char == '`' and pre_char != '\\' and pre_char != '(':
                     name_flag = not name_flag
-                    # start_end_flag = not start_end_flag
                     pre_char = current_char
                     # continue
                 if current_char == '\'' and pre_char != '\\':
@@ -134,7 +136,7 @@ class MysqlExecute:
                     if brackets_flag is False:
                         if current_char != ' ' and current_char != '' and current_char != ',' and current_char != '`' and current_char != '\'':
                             start_end_flag = True
-                        if current_char == ' ' or current_char == '' or (current_char == ',' and pre_char == ')') or (current_char == ',' and pre_char != '`'):
+                        if current_char == ' ' or current_char == '' or current_char_len == len(current_str):
                         # if current_char == ' ' or current_char == '' or (current_char == ',' and pre_char == ')'):
                             start_end_flag = False
                     if current_char == '(':
@@ -146,6 +148,7 @@ class MysqlExecute:
                     word_list.append(current_word)
                     # print(current_word)
                     current_word = ''
+            # print(word_list)
             if '`'in word_list[0]:
                 param_name = word_list[0].replace('`', '')
                 param_info[param_name] = dict()
@@ -187,9 +190,10 @@ class MysqlExecute:
                         not_flag = False
                         continue
             if word_list[0] + word_list[1] == 'PRIMARYKEY':
+                param_names = MysqlExecute.deal_prefix_index(word_list[2])
                 if 'PRI' not in index_info:
                     index_info['PRI'] = dict()
-                index_info['PRI']['params_name'] = word_list[2].replace('(', '').replace(')', '').replace('`', '').split(',')
+                index_info['PRI']['params_name'] = param_names
                 if 'USING' in word_list:
                     # print(word_list)
                     index_info['PRI']['__type__'] = word_list[word_list.index('USING')+1]
@@ -198,13 +202,15 @@ class MysqlExecute:
                     index_info['MUL'] = dict()
                     # index_info['MUL']['params_name'] = dict()
                 key_name = word_list[1].replace('`', '')
+                param_names = MysqlExecute.deal_prefix_index(word_list[2])
                 index_info['MUL'][key_name] = dict()
                 index_info['MUL'][key_name]['is_only'] = 'n'
-                index_info['MUL'][key_name]['params'] = word_list[2].replace('(', '').replace(')', '').replace('`', '').split(',')
+                index_info['MUL'][key_name]['params'] = param_names
                 if 'USING' in word_list:
                     index_info['MUL'][key_name]['__type__'] = word_list[word_list.index('USING') + 1]
             if word_list[0] + word_list[1] == 'UNIQUEKEY':
-                params_list = word_list[3].replace('(', '').replace(')', '').replace('`', '').split(',')
+                param_names = MysqlExecute.deal_prefix_index(word_list[3])
+                params_list = param_names
                 if len(params_list) > 1:
                     index_type = 'MUL'
                 else:
@@ -219,6 +225,7 @@ class MysqlExecute:
                 if 'USING' in word_list:
                     index_info[index_type][key_name]['__type__'] = word_list[word_list.index('USING') + 1]
             if word_list[0] + word_list[1] == 'SPATIALKEY' or word_list[0] + word_list[1] == 'FULLTEXTKEY':
+                param_names = MysqlExecute.deal_prefix_index(word_list[3])
                 index_type = 'MUL'
                 if index_type not in index_info:
                     index_info[index_type] = dict()
@@ -226,11 +233,20 @@ class MysqlExecute:
                 key_name = word_list[2].replace('`', '')
                 index_info[index_type][key_name] = dict()
                 index_info[index_type][key_name]['is_only'] = 'n'
-                index_info[index_type][key_name]['params'] = word_list[3].replace('(', '').replace(')', '').replace('`', '').split(',')
+                index_info[index_type][key_name]['params'] = param_names
                 if 'USING' in word_list:
                     index_info[index_type][key_name]['__type__'] = word_list[word_list.index('USING') + 1]
         # print(param_info)
+        # print(index_info)
         return index_info, param_info
+
+    @staticmethod
+    def deal_prefix_index(field_str):
+        param_names = MysqlExecute.get_brackets_contents_for_str(field_str,1)[0].replace('`', '').split(',')
+        for i in range(len(param_names)):
+            if '(' in param_names[i] and ')' in param_names[i]:
+                param_names[i] = param_names[i].split('(')[0]
+        return param_names
 
     @staticmethod
     def get_brackets_contents_for_str(_str, level):
@@ -279,7 +295,7 @@ if __name__ == '__main__':
     qq = MysqlExecute(host='127.0.0.1', user='root', password='123456', db='mytest')
     # qq.set_cursor_dict()
     # print(qq.get_create_table('schedule_daily_schedule'))
-    print(qq.make_table_info('schedule_daily_schedule'))
+    print(qq.make_table_info('schedule_daily_schedule1'))
     # print(qq.get_desc('schedule_daily_schedule'))
     # print('\'')
     # print(qq.get_table_list())

@@ -1,5 +1,6 @@
 import docx
 import re
+import os
 
 from configuration import Configuration
 
@@ -163,7 +164,9 @@ class MyDocx:
                 if param_map['comment_ori'] is None:
                     param_map['comment_ori'] = ''
                 else:
-                    param_map['comment'] = param_map['comment_ori'].replace(' ', '').replace('\n', '').replace('\r', '')
+                    # param_map['comment'] = param_map['comment_ori'].replace(' ', '').replace('\n', '').replace('\r', '')
+                    param_map['comment'] = param_map['comment_ori']
+                    # print(param_map['comment'])
 
                 if default_num != 0:
                     param_map['default_ori'] = MyDocx.get_table_cell(table=table, row=row, column=default_num)

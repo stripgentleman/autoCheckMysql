@@ -6,28 +6,24 @@
 [doc]
 # tableFlagPosition：判定表格为数据字典表格的依据字段所在的位置
 tableFlagPosition=(-3,0)
-
 # tableFlagValue：判定表格为数据字典表格的依据字段的值
-tableFlagValue=数据表
+tableFlagValue=数据
 
 # tableNamePosition：数据字典里数据表名称的位置
 tableNamePosition=(-4,1)
 
 # tableDefaultCharsetFlag：数据表默认字符集检测开关，True为开启，False为关闭
 tableDefaultCharsetFlag=True
-
 # tableDefaultCharsetPosition：数据表默认字符集在每个数据字典表的位置
 tableDefaultCharsetPosition=(-2,1)
 
 # tableEngineFlag：数据表存储引擎检测开关，True为开启，False为关闭
 tableEngineFlag=True
-
 # tableEnginePosition：数据表存储引擎在每个数据字典表的位置
 tableEnginePosition=(-3,1)
 
 # unionIndexFlag：联合索引检测开关，True为开启，False为关闭
 unionIndexFlag=True
-
 # unionIndexPosition：联合索引在每个数据字典表的位置
 unionIndexPosition=(-1,1)
 
@@ -36,7 +32,6 @@ minTableRowsValue=5
 
 # fieldInfoEndValue：字段信息结尾标志值
 fieldInfoEndValue=数据
-
 # fieldInfoEndColumn：字段信息结尾标志列数
 fieldInfoEndColumn=0
 
