@@ -54,7 +54,7 @@ class MysqlExecute:
 
         table_info = self.get_param_info_from_create_str(params_desc)
 
-        # print(table_info[0])
+        # print(table_info[1])
         for key_type in table_info[0]:
             if key_type == 'PRI':
                 if len(table_info[0][key_type]['params_name']) > 1:
@@ -106,6 +106,7 @@ class MysqlExecute:
 
     @staticmethod
     def get_param_info_from_create_str(_str_list):
+        # print(_str_list)
         param_info = dict()
         index_info = dict()
         for current_str in _str_list:
@@ -123,7 +124,7 @@ class MysqlExecute:
                     name_flag = not name_flag
                     pre_char = current_char
                     # continue
-                if current_char == '\'' and pre_char != '\\':
+                if current_char == '\'' and pre_char != '\\' and not brackets_flag:
                     omitted_flag = not omitted_flag
                     # print(omitted_flag)
                     start_end_flag = not start_end_flag
@@ -295,7 +296,7 @@ if __name__ == '__main__':
     qq = MysqlExecute(host='127.0.0.1', user='root', password='123456', db='mytest')
     # qq.set_cursor_dict()
     # print(qq.get_create_table('schedule_daily_schedule'))
-    print(qq.make_table_info('schedule_daily_schedule1'))
+    print(qq.make_table_info('ch_template'))
     # print(qq.get_desc('schedule_daily_schedule'))
     # print('\'')
     # print(qq.get_table_list())
