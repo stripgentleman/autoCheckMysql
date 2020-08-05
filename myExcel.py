@@ -85,10 +85,14 @@ class MyExcel:
             for i in range(2, max_row+1):
                 current_value = self._sheet.cell(row=i, column=col_num).value
                 if current_value != past_value:
-                    self._sheet.merge_cells(start_row=start_row,end_row=i-1,start_column=col_num,end_column=col_num)
+                    self._sheet.merge_cells(start_row=start_row, end_row=i - 1, start_column=col_num, end_column=col_num)
                     self._sheet.cell(row=start_row, column=col_num).alignment = openpyxl.styles.Alignment(vertical='center')
                     start_row = i
                     past_value = current_value
+                if i == max_row and current_value == past_value:
+                    self._sheet.merge_cells(start_row=start_row, end_row=i, start_column=col_num, end_column=col_num)
+                    self._sheet.cell(row=start_row, column=col_num).alignment = openpyxl.styles.Alignment(vertical='center')
+
         if merge_type == 2:
             for i in range(2, max_row+1):
                 current_value = self._sheet.cell(row=i, column=col_num).value
