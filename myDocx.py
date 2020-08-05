@@ -93,7 +93,7 @@ class MyDocx:
         table_name = MyDocx.get_table_cell(table=table,
                                            row=int(MyDocx.config['tableNamePosition']['row']),
                                            column=int(MyDocx.config['tableNamePosition']['col']))
-        table_info['table_name'] = table_name
+        table_info['table_name'] = str(table_name).replace(' ', '')
         
         table_info['params'] = dict()
         column_names = MyDocx.get_table_cell(table, row=0)
@@ -171,6 +171,9 @@ class MyDocx:
                 if default_num != 0:
                     param_map['default_ori'] = MyDocx.get_table_cell(table=table, row=row, column=default_num)
                     param_map['default'] = param_map['default_ori']
+                else:
+                    param_map['default_ori'] = ''
+                    param_map['default'] = 'NULL'
 
                 table_info['params'][str(name)] = param_map
                 row += 1
