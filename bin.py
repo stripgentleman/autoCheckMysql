@@ -167,9 +167,9 @@ def check_run(_database, _doc):
 
 
 if __name__ == '__main__':
-    mysql_info = MysqlInfo(host='172.20.4.235', user='root', password='test', db='addatasys')
-    # docx_info = DocxInfo('C:/Users/测试/Desktop/广告业务/广告业务后台/document/3.0/概要设计/广告业务后台-数据字典.docx')
-    docx_info = DocxInfo('./addatasys.docx')
+    mysql_info = MysqlInfo(host='', user='', password='', db='')
+    # docx_info = DocxInfo('')
+    docx_info = DocxInfo('')
     # for aa in docx_info.table_info_list:
     #     print(aa)
     # print(docx_info)

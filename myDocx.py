@@ -64,7 +64,7 @@ class MyDocx:
         if check_flag.startswith(MyDocx.config['tableFlagValue']):
             # print('1')
             return True
-        print(check_flag)
+        print('config.tableFlagValue(数据字典标识)：', check_flag, ' 检测错误，与config内配置值：', MyDocx.config['tableFlagValue'], ' 不匹配')
         return False
 
     @staticmethod
