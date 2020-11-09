@@ -68,6 +68,20 @@ class MyDocx:
         return False
 
     @staticmethod
+    def check_repeated_table(table_list):
+        table_name_set = set()
+        repeated_table_name = set()
+        table_name_list = list()
+        for table in table_list:
+            table_name = MyDocx.get_table_cell(table=table, row=int(MyDocx.config['tableNamePosition']['row']), column=int(MyDocx.config['tableNamePosition']['col']))
+            table_name_set.add(table_name)
+            table_name_list.append(table_name)
+            if len(table_name_list) != len(table_name_set):
+                repeated_table_name.add(table_name)
+                table_name_list.pop(-1)
+        return list(repeated_table_name)
+
+    @staticmethod
     def get_sql_table_list(table_list):
         sql_table_list = list()
         count = 0
@@ -221,6 +235,8 @@ class MyDocx:
 
     def get_info_list(self):
         sql_table_list = self.get_sql_table_list(self.get_table_list())
+        repeated_table = self.check_repeated_table(sql_table_list)
+        print(u'存在重复的表名：', repeated_table)
         info_list = list()
         for sql_table in sql_table_list:
             # print(sql_table)
