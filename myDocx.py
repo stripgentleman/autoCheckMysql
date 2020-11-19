@@ -179,7 +179,8 @@ class MyDocx:
                     param_map['comment_ori'] = ''
                 else:
                     # param_map['comment'] = param_map['comment_ori'].replace(' ', '').replace('\n', '').replace('\r', '')
-                    param_map['comment'] = param_map['comment_ori']
+                    param_map['comment'] = param_map['comment_ori'].replace('\n', '\\n').replace('\r', '\\r').replace('\r\n', '\\r\\n')
+                    # param_map['comment'] = param_map['comment_ori']
                     # print(param_map['comment'])
 
                 if default_num != 0:
@@ -246,8 +247,8 @@ class MyDocx:
 
 
 if __name__ == '__main__':
-    my = MyDocx('./广告业务后台-数据字典.docx')
-    # my = MyDocx('./运维管理系统项目-数据字典V1.0.docx')
+    my = MyDocx('')
+    # my = MyDocx('')
     tl = my.get_info_list()
     for t in tl:
         print(t)
