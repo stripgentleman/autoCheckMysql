@@ -136,7 +136,8 @@ def check_default(_database_param_info, _doc_param_info):
 
 
 def check_comment(_database_param_info, _doc_param_info):
-    if _database_param_info['comment'] == _doc_param_info['comment']:
+    temp = _database_param_info['comment'].replace('\\r\\n ', '\\n')
+    if temp == _doc_param_info['comment']:
         return True
     # print(_doc_param_info['comment'])
     # print(_database_param_info['comment'])

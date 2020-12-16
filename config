@@ -40,4 +40,13 @@ fieldInfoEndColumn=0
 [mysql]
 
 [log]
-
+# logSaveFlag：是否开启log保存，True保存，False不保存
+logSaveFlag=True
+# logFileNameValue：log文件名
+logFileNameValue=autoCheckMysql.log
+# onlyOnceLogFlag：是否只存储最近一次运行的log，True为只存储最近一次运行的log，False为每次运行的log都存储在log文件
+onlyOnceLogFlag=True
+# logLevelValue：设置log等级，默认DEBUG
+logLevelValue=DEBUG
+# logFormatterValue：设置log存储格式，模式可参考logging模块的原生format格式
+logFormatterValue=%(asctime)s - %(funcName)s %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s

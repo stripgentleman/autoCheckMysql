@@ -10,12 +10,14 @@ class Configuration:
         ('[doc]', 'get_doc_config'),
         ('[excel]', 'get_excel_config'),
         ('[mysql]', 'get_mysql_config'),
+        ('[log]', 'get_log_config'),
     ]
 
     def __init__(self):
         self.doc_config_dict = dict()
         self.mysql_config_dict = dict()
         self.excel_config_dict = dict()
+        self.log_config_dict = dict()
         self.init_config_dict()
 
     def init_config_dict(self):
@@ -69,6 +71,19 @@ class Configuration:
 
     def get_excel_config(self, config_str):
         return None
+
+    def get_log_config(self, config_str):
+        config_list = config_str.split('=')
+        if str(config_list[0])[-4:] == 'Flag':
+            if config_list[1] == 'True':
+                self.doc_config_dict[config_list[0]] = True
+            elif config_list[1] == 'False':
+                self.doc_config_dict[config_list[0]] = False
+            else:
+                print('配置信息错误(应该是True或False)：' + config_list[0] + '=' + config_list[1] + '\n')
+                return False
+        if str(config_list[0])[-5:] == 'Value':
+            self.doc_config_dict[config_list[0]] = config_list[1]
 
     @staticmethod
     def set_flag(config_str):
