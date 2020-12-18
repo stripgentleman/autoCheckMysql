@@ -1,6 +1,8 @@
 import logging
 import traceback
 from configuration import Configuration
+import sys
+
 
 
 # # logSaveFlag：是否开启log保存，True保存，False不保存
@@ -16,6 +18,13 @@ from configuration import Configuration
 
 class LogService:
     config = Configuration().doc_config_dict
+    INFO = logging.INFO
+    ERROR = logging.ERROR
+    DEBUG = logging.DEBUG
+    WARNING = logging.WARNING
+    CRITICAL = logging.CRITICAL
+    NOTSET = logging.NOTSET
+    FATAL = logging.FATAL
 
     def __init__(self):
         self.log_enable = None
@@ -31,4 +40,49 @@ class LogService:
         self.only_save_once = self.config['onlyOnceLogFlag']
         self.log_level = self.config['logLevelValue']
         self.log_format = self.config['logFormatterValue']
+
+    def log_for_call_method(self, log_level):
+        def log_method(fun):
+            def make_log(*args, **kwargs):
+                if self.log_enable:
+                    self.log(str(fun.__name__) + '被调用', log_level)
+                    try:
+                        fun(*args, **kwargs)
+                    except Exception as e:
+
+                        # ttype, tvalue, ttraceback = sys.exc_info()
+                        # traceback_str = ''
+                        # for traceback_info in traceback.format_exception(ttype, tvalue, ttraceback):
+                        #     traceback_str += traceback_info
+                        self.log(str(fun.__name__) + f'{kwargs}'+ '调用出错，错误信息如下：\n' + traceback.format_exc(), self.ERROR)
+                        # print(ttype, tvalue, end="\n")
+                        # i = 1
+                        # while ttraceback:
+                        #     print("第{}层堆栈信息".format(i))
+                        #     tracebackCode = ttraceback.tb_frame.f_code
+                        #     print("文件名：{}".format(tracebackCode.co_filename))
+                        #     print("函数或者模块名：{}".format(tracebackCode.co_name))
+                        #     ttraceback = ttraceback.tb_next
+                        #     i += 1
+
+                        raise e
+
+                    self.log(str(fun.__name__) + '调用结束', log_level)
+            return make_log
+        return log_method
+
+
+    def log(self,message,level):
+        print(message)
+
+
+if __name__ == '__main__':
+    logger = LogService()
+
+    @logger.log_for_call_method('DEBUG')
+    def aaa(c,d):
+        print(c/d)
+
+
+    aaa(c=1,b=0)
 
