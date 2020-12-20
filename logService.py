@@ -17,6 +17,7 @@ import sys
 # logFormatterValue=%(asctime)s - %(levelname)s %(filename)s[line:%(lineno)d] - %(funcName)s: %(message)s
 
 class LogService:
+
     config = Configuration().doc_config_dict
     INFO = logging.INFO
     ERROR = logging.ERROR
@@ -45,16 +46,19 @@ class LogService:
         def log_method(fun):
             def make_log(*args, **kwargs):
                 if self.log_enable:
-                    self.log(str(fun.__name__) + '被调用', log_level)
+                    params = ''
+                    for arg in args:
+                        params += f'{arg},'
+                    for kwarg in kwargs:
+                        params += f'{kwarg}={kwargs[kwarg]},'
+                    self.log(fun.__qualname__ + f'({params[:-1]})执行', log_level)
                     try:
                         fun(*args, **kwargs)
                     except Exception as e:
-
                         # ttype, tvalue, ttraceback = sys.exc_info()
                         # traceback_str = ''
                         # for traceback_info in traceback.format_exception(ttype, tvalue, ttraceback):
                         #     traceback_str += traceback_info
-                        self.log(str(fun.__name__) + f'{kwargs}'+ '调用出错，错误信息如下：\n' + traceback.format_exc(), self.ERROR)
                         # print(ttype, tvalue, end="\n")
                         # i = 1
                         # while ttraceback:
@@ -64,16 +68,19 @@ class LogService:
                         #     print("函数或者模块名：{}".format(tracebackCode.co_name))
                         #     ttraceback = ttraceback.tb_next
                         #     i += 1
-
+                        # 等效
+                        self.log(fun.__qualname__ + f'({params[:-1]})' + "调用出错，错误信息如下：\n" + traceback.format_exc(), self.ERROR)
                         raise e
-
-                    self.log(str(fun.__name__) + '调用结束', log_level)
+                    self.log(fun.__qualname__ + f'({params[:-1]})执行结束', log_level)
             return make_log
         return log_method
 
-
     def log(self,message,level):
         print(message)
+
+    # def init_log_setting(self, ):
+
+
 
 
 if __name__ == '__main__':
@@ -84,5 +91,19 @@ if __name__ == '__main__':
         print(c/d)
 
 
-    aaa(c=1,b=0)
+    # aaa(c=1,b=0)
 
+    class a:
+        @logger.log_for_call_method('DEBUG')
+        def b(self,bb):
+            print(bb)
+
+        @staticmethod
+        @logger.log_for_call_method('DEBUG')
+        def c(cc):
+            print(cc)
+
+    test = a()
+    ll = list([1,2,3])
+    test.b(ll)
+    test.c('222222')
