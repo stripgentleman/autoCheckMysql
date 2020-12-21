@@ -3,12 +3,17 @@
 from compareData import MysqlInfo
 from compareData import DocxInfo
 from configuration import Configuration
+from logService import LogService
 
 import pymysql
 import myExcel
 import time
 
 
+logService = LogService()
+
+
+@logService.log_for_call_method(LogService.DEBUG)
 def check(_doc_table_info, _database_table_info):
     doc_config = Configuration().doc_config_dict
     if _database_table_info is None:
@@ -74,6 +79,7 @@ def check(_doc_table_info, _database_table_info):
     return err_map
 
 
+@logService.log_for_call_method(LogService.DEBUG)
 def union_index_check(_database_table_info, _doc_table_info):
     if len(_database_table_info['union_index'].keys()) != len(_doc_table_info['union_index'].keys()):
         return False
@@ -89,30 +95,35 @@ def union_index_check(_database_table_info, _doc_table_info):
         return True
 
 
+@logService.log_for_call_method(LogService.DEBUG)
 def default_charset_check(_database_table_info, _doc_table_info):
     if _database_table_info['default_charset'] == _doc_table_info['default_charset']:
         return True
     return False
 
 
+@logService.log_for_call_method(LogService.DEBUG)
 def database_engine_check(_database_table_info, _doc_table_info):
     if _database_table_info['database_engine'] == _doc_table_info['database_engine']:
         return True
     return False
 
 
+@logService.log_for_call_method(LogService.DEBUG)
 def check_only(_database_param_info, _doc_param_info):
     if _database_param_info['is_only'] == _doc_param_info['is_only']:
         return True
     return False
 
 
+@logService.log_for_call_method(LogService.DEBUG)
 def check_null(_database_param_info, _doc_param_info):
     if _database_param_info['is_null'] == _doc_param_info['is_null']:
         return True
     return False
 
 
+@logService.log_for_call_method(LogService.DEBUG)
 def check_index(_database_param_info, _doc_param_info):
     if _database_param_info['is_index'] == _doc_param_info['is_index']:
         return True
@@ -125,6 +136,7 @@ def check_index(_database_param_info, _doc_param_info):
         return False
 
 
+@logService.log_for_call_method(LogService.DEBUG)
 def check_default(_database_param_info, _doc_param_info):
     if _database_param_info['default'] == '' and _doc_param_info['default'] == 'EMPTY STRING':
         return True
@@ -135,6 +147,7 @@ def check_default(_database_param_info, _doc_param_info):
     return False
 
 
+@logService.log_for_call_method(LogService.DEBUG)
 def check_comment(_database_param_info, _doc_param_info):
     temp = _database_param_info['comment'].replace('\\r\\n ', '\\n')
     if temp == _doc_param_info['comment']:
@@ -144,6 +157,7 @@ def check_comment(_database_param_info, _doc_param_info):
     return False
 
 
+@logService.log_for_call_method(LogService.DEBUG)
 def check_run(_database, _doc):
     # print(_database.get_table_list())
     # print(_doc.table_info_list)

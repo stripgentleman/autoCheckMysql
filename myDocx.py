@@ -3,10 +3,13 @@ import re
 import os
 
 from configuration import Configuration
+from logService import LogService
 
 
 class MyDocx:
     config = Configuration().doc_config_dict
+
+    logService = LogService()
 
     def __init__(self, document_path):
         self.document = docx.Document(document_path)
@@ -30,6 +33,7 @@ class MyDocx:
         return columns
 
     @staticmethod
+    @logService.log_for_call_method(LogService.DEBUG)
     def get_table_cell(table, row=None, column=None):
         if row is not None and column is not None:
 
@@ -51,6 +55,7 @@ class MyDocx:
         return ret_cell
 
     @staticmethod
+    @logService.log_for_call_method(LogService.DEBUG)
     def check_table_sql(table):
         check_flag = MyDocx.get_table_cell(table=table,
                                            row=int(MyDocx.config['tableFlagPosition']['row']),
@@ -68,6 +73,7 @@ class MyDocx:
         return False
 
     @staticmethod
+    @logService.log_for_call_method(LogService.DEBUG)
     def check_repeated_table(table_list):
         table_name_set = set()
         repeated_table_name = set()
@@ -82,6 +88,7 @@ class MyDocx:
         return list(repeated_table_name)
 
     @staticmethod
+    @logService.log_for_call_method(LogService.DEBUG)
     def get_sql_table_list(table_list):
         sql_table_list = list()
         count = 0
@@ -92,11 +99,12 @@ class MyDocx:
             try:
                 if MyDocx.check_table_sql(table=table):
                     sql_table_list.append(table)
-            except:
-                print('Error in table:' + str(MyDocx.get_table_cell(table=table, row=-3, column=1)) + u'表识别错误')
+            except Exception as e:
+                MyDocx.logService.log('Error in table:' + str(MyDocx.get_table_cell(table=table, row=-3, column=1)) + u'表识别错误',LogService.DEBUG)
         return sql_table_list
 
     @staticmethod
+    @logService.log_for_call_method(LogService.DEBUG)
     def get_table_info(table):
         if table is None:
             return None
@@ -234,6 +242,7 @@ class MyDocx:
         #     print(table_info)
         return table_info
 
+    @logService.log_for_call_method(LogService.DEBUG)
     def get_info_list(self):
         sql_table_list = self.get_sql_table_list(self.get_table_list())
         repeated_table = self.check_repeated_table(sql_table_list)

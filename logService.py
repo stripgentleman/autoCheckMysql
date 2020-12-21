@@ -1,8 +1,6 @@
 import logging
 import traceback
 from configuration import Configuration
-import sys
-
 
 
 # # logSaveFlag：是否开启log保存，True保存，False不保存
@@ -33,7 +31,9 @@ class LogService:
         self.only_save_once = None
         self.log_level = None
         self.log_format = None
+        self.logger = None
         self.config_init()
+        self.init_log_setting()
 
     def config_init(self):
         self.log_enable = self.config['logSaveFlag']
@@ -53,7 +53,7 @@ class LogService:
                         params += f'{kwarg}={kwargs[kwarg]},'
                     self.log(fun.__qualname__ + f'({params[:-1]})执行', log_level)
                     try:
-                        fun(*args, **kwargs)
+                        ret = fun(*args, **kwargs)
                     except Exception as e:
                         # ttype, tvalue, ttraceback = sys.exc_info()
                         # traceback_str = ''
@@ -72,34 +72,54 @@ class LogService:
                         self.log(fun.__qualname__ + f'({params[:-1]})' + "调用出错，错误信息如下：\n" + traceback.format_exc(), self.ERROR)
                         raise e
                     self.log(fun.__qualname__ + f'({params[:-1]})执行结束', log_level)
+                    return ret
             return make_log
         return log_method
 
-    def log(self,message,level):
-        print(message)
+    def log(self, message, level):
+        if self.log_enable:
+            if level == self.ERROR:
+                self.logger.error(message)
+            if level == self.CRITICAL:
+                self.logger.critical(message)
+            if level == self.WARNING:
+                self.logger.warning(message)
+            if level == self.INFO:
+                self.logger.info(message)
+            if level == self.FATAL:
+                self.logger.fatal(message)
+            if level == self.DEBUG:
+                self.logger.debug(message)
 
-    # def init_log_setting(self, ):
-
-
+    def init_log_setting(self):
+        if self.log_enable:
+            logger = logging.getLogger('autoCheckMysql')
+            logger.setLevel(self.log_level)
+            log_file_handle = logging.FileHandler(self.log_file_name, 'w' if self.only_save_once else 'a',encoding='utf8')
+            log_file_handle.setLevel(self.log_level)
+            formatter = logging.Formatter(self.log_format)
+            log_file_handle.setFormatter(formatter)
+            logger.addHandler(log_file_handle)
+            self.logger = logger
 
 
 if __name__ == '__main__':
-    logger = LogService()
+    logger1 = LogService()
 
-    @logger.log_for_call_method('DEBUG')
+    @logger1.log_for_call_method(LogService.DEBUG)
     def aaa(c,d):
         print(c/d)
 
 
-    # aaa(c=1,b=0)
+    aaa(c=1,d=0)
 
     class a:
-        @logger.log_for_call_method('DEBUG')
+        @logger1.log_for_call_method(LogService.DEBUG)
         def b(self,bb):
             print(bb)
 
         @staticmethod
-        @logger.log_for_call_method('DEBUG')
+        @logger1.log_for_call_method(LogService.DEBUG)
         def c(cc):
             print(cc)
 
