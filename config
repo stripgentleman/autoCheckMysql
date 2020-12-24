@@ -49,4 +49,4 @@ onlyOnceLogFlag=True
 # logLevelValue：设置log等级，默认DEBUG
 logLevelValue=DEBUG
 # logFormatterValue：设置log存储格式，模式可参考logging模块的原生format格式
-logFormatterValue=%(levelname)s - %(asctime)s - %(filename)s[line:%(lineno)d]: %(message)s
+logFormatterValue=%(levelname)s - %(asctime)s]: %(message)s
