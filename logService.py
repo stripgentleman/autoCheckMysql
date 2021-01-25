@@ -15,7 +15,6 @@ from configuration import Configuration
 # logFormatterValue=%(asctime)s - %(levelname)s %(filename)s[line:%(lineno)d] - %(funcName)s: %(message)s
 
 class LogService:
-
     config = Configuration().doc_config_dict
     INFO = logging.INFO
     ERROR = logging.ERROR
@@ -73,7 +72,9 @@ class LogService:
                         raise e
                     self.log(fun.__qualname__ + f'({params[:-1]})执行结束', log_level)
                     return ret
+
             return make_log
+
         return log_method
 
     def log(self, message, level):
@@ -95,35 +96,34 @@ class LogService:
         if self.log_enable:
             logger = logging.getLogger('autoCheckMysql')
             logger.setLevel(self.log_level)
-            log_file_handle = logging.FileHandler(self.log_file_name, 'w' if self.only_save_once else 'a',encoding='utf8')
+            log_file_handle = logging.FileHandler(self.log_file_name, 'w' if self.only_save_once else 'a', encoding='utf8')
             log_file_handle.setLevel(self.log_level)
             formatter = logging.Formatter(self.log_format)
             log_file_handle.setFormatter(formatter)
             logger.addHandler(log_file_handle)
             self.logger = logger
 
-
-if __name__ == '__main__':
-    logger1 = LogService()
-
-    @logger1.log_for_call_method(LogService.DEBUG)
-    def aaa(c,d):
-        print(c/d)
-
-
-    aaa(c=1,d=0)
-
-    class a:
-        @logger1.log_for_call_method(LogService.DEBUG)
-        def b(self,bb):
-            print(bb)
-
-        @staticmethod
-        @logger1.log_for_call_method(LogService.DEBUG)
-        def c(cc):
-            print(cc)
-
-    test = a()
-    ll = list([1,2,3])
-    test.b(ll)
-    test.c('222222')
+# if __name__ == '__main__':
+#     logger1 = LogService()
+#
+#     @logger1.log_for_call_method(LogService.DEBUG)
+#     def aaa(c,d):
+#         print(c/d)
+#
+#
+#     aaa(c=1,d=0)
+#
+#     class a:
+#         @logger1.log_for_call_method(LogService.DEBUG)
+#         def b(self,bb):
+#             print(bb)
+#
+#         @staticmethod
+#         @logger1.log_for_call_method(LogService.DEBUG)
+#         def c(cc):
+#             print(cc)
+#
+#     test = a()
+#     ll = list([1,2,3])
+#     test.b(ll)
+#     test.c('222222')

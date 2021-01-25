@@ -11,6 +11,7 @@ class Configuration:
         ('[excel]', 'get_excel_config'),
         ('[mysql]', 'get_mysql_config'),
         ('[log]', 'get_log_config'),
+        ('[compareConfig]', 'get_compare_config')
     ]
 
     def __init__(self):
@@ -18,6 +19,7 @@ class Configuration:
         self.mysql_config_dict = dict()
         self.excel_config_dict = dict()
         self.log_config_dict = dict()
+        self.compare_config_dict = dict()
         self.init_config_dict()
 
     def init_config_dict(self):
@@ -84,6 +86,17 @@ class Configuration:
                 return False
         if str(config_list[0])[-5:] == 'Value':
             self.doc_config_dict[config_list[0]] = config_list[1]
+
+    def get_compare_config(self, config_str):
+        config_list = config_str.split('=')
+        if str(config_list[0])[-4:] == 'Flag':
+            if config_list[1] == 'True':
+                self.compare_config_dict[config_list[0]] = True
+            elif config_list[1] == 'False':
+                self.compare_config_dict[config_list[0]] = False
+            else:
+                print('配置信息错误(应该是True或False)：' + config_list[0] + '=' + config_list[1] + '\n')
+                return False
 
     @staticmethod
     def set_flag(config_str):

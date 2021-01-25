@@ -3,9 +3,20 @@
 # 如，tableNamePosition=(-3,0)的意思是表名在表格的倒数第三行第一列
 # 目前配置种类有*Flag,*Column,*Value,*Position
 
+[compareConfig]
+#commentIgnoreCaseFlag：表字段注释检测时忽略大小写开关，True为开启忽略，False为关闭忽略
+commentIgnoreCaseFlag=False
+#commentIgnorePreAndPostSpaceFlag：表字段注释检测时忽略前后空格开关，True为开启忽略，False为关闭忽略
+commentIgnorePreAndPostSpaceFlag=False
+
+#commentIgnoreLineFeedFlag：表字段注释检测时忽略换行符，True为开启忽略，False为关闭忽略
+#注意，开启该设置后会忽略注释里的\n,\r,\n\r,\r\n
+commentIgnoreLineFeedFlag=False
+
+
 [doc]
 # tableFlagPosition：判定表格为数据字典表格的依据字段所在的位置
-tableFlagPosition=(-3,0)
+tableFlagPosition=(-4,0)
 # tableFlagValue：判定表格为数据字典表格的依据字段的值
 tableFlagValue=数据
 

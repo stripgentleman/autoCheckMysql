@@ -11,11 +11,13 @@ import time
 
 
 logService = LogService()
+CONFIG = Configuration()
+doc_config = CONFIG.doc_config_dict
+compare_config = CONFIG.compare_config_dict
 
 
 @logService.log_for_call_method(LogService.DEBUG)
 def check(_doc_table_info, _database_table_info):
-    doc_config = Configuration().doc_config_dict
     if _database_table_info is None:
         return False
     _check_res = list()
@@ -149,8 +151,18 @@ def check_default(_database_param_info, _doc_param_info):
 
 @logService.log_for_call_method(LogService.DEBUG)
 def check_comment(_database_param_info, _doc_param_info):
-    temp = _database_param_info['comment'].replace('\\r\\n ', '\\n')
-    if temp == _doc_param_info['comment']:
+    database_temp = _database_param_info['comment'].replace('\\r\\n ', '\\n')
+    doc_temp = _doc_param_info['comment']
+    if compare_config['commentIgnoreCaseFlag']:
+        doc_temp = doc_temp.lower()
+        database_temp = database_temp.lower()
+    if compare_config['commentIgnorePreAndPostSpaceFlag']:
+        doc_temp = doc_temp.strip(' ')
+        database_temp = database_temp.strip(' ')
+    if compare_config['commentIgnoreLineFeedFlag']:
+        doc_temp = doc_temp.replace('\r\n ', '').replace('\r', '').replace('\n', '')
+        database_temp = database_temp.replace('\\r\\n ', '').replace('\\r', '').replace('\\n', '')
+    if database_temp == doc_temp:
         return True
     # print(_doc_param_info['comment'])
     # print(_database_param_info['comment'])
@@ -182,9 +194,9 @@ def check_run(_database, _doc):
 
 
 if __name__ == '__main__':
-    mysql_info = MysqlInfo(host='', user='', password='', db='')
+    mysql_info = MysqlInfo(host='172.20.4.235', user='root', password='test', db='addatasys')
     # docx_info = DocxInfo('')
-    docx_info = DocxInfo('')
+    docx_info = DocxInfo('F:\\Desktop\\广告业务\\广告业务后台\\document\\4.0\\概要设计\\广告业务后台-数据字典.docx')
     # for aa in docx_info.table_info_list:
     #     print(aa)
     # print(docx_info)
