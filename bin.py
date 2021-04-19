@@ -140,6 +140,8 @@ def check_index(_database_param_info, _doc_param_info):
 
 @logService.log_for_call_method(LogService.DEBUG)
 def check_default(_database_param_info, _doc_param_info):
+    if _database_param_info['default'] == '' and _doc_param_info['default'] == 'EMPTY_STRING':
+        return True
     if _database_param_info['default'] == '' and _doc_param_info['default'] == 'EMPTY STRING':
         return True
     # if _database_param_info['default'] == 'NULL' and _doc_param_info['default'] == '':
@@ -194,9 +196,9 @@ def check_run(_database, _doc):
 
 
 if __name__ == '__main__':
-    mysql_info = MysqlInfo(host='172.20.4.235', user='root', password='test', db='addatasys')
+    mysql_info = MysqlInfo(host='', user='', password='', db='')
     # docx_info = DocxInfo('')
-    docx_info = DocxInfo('F:\\Desktop\\广告业务\\广告业务后台\\document\\4.0\\概要设计\\广告业务后台-数据字典.docx')
+    docx_info = DocxInfo('')
     # for aa in docx_info.table_info_list:
     #     print(aa)
     # print(docx_info)

@@ -293,10 +293,14 @@ class MysqlExecute:
 
 
 if __name__ == '__main__':
-    qq = MysqlExecute(host='127.0.0.1', user='root', password='123456', db='mytest')
+    qq = MysqlExecute(host='', user='', password='', db='')
     # qq.set_cursor_dict()
     # print(qq.get_create_table('schedule_daily_schedule'))
-    print(qq.make_table_info('ch_template'))
+    print(qq.make_table_info('tes'))
+    # qq.db_cursor.execute('select * from my2')
+    for i in range(qq.db_cursor.rowcount):
+        aa = qq.db_cursor.fetchone()
+        print(aa)
     # print(qq.get_desc('schedule_daily_schedule'))
     # print('\'')
     # print(qq.get_table_list())
